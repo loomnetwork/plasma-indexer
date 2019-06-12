@@ -25,9 +25,9 @@ loomstore-indexer
 `
 
 var rootCmd = &cobra.Command{
-	Use:          "loomstore-scanner",
-	Short:        "LoomStore scanner",
-	Long:         `A DappChain scanner that captures events from LoomStore contract`,
+	Use:          "loomstore-indexer",
+	Short:        "LoomStore indexer",
+	Long:         `A DappChain indexer that captures events from LoomStore contract`,
 	Example:      rootCmdExample,
 	SilenceUsage: true,
 	RunE: func(cmd *cobra.Command, args []string) error {
