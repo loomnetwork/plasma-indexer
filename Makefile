@@ -24,4 +24,7 @@ loomstore-abigen: abigen
 abigen:
 	go get github.com/ethereum/go-ethereum/cmd/abigen
 
+deps:
+	dep ensure -vendor-only
+
 .PHONY: all build clean test abigen cardfaucet-abigen
