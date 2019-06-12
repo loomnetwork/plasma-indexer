@@ -1,4 +1,4 @@
-package cardfaucet
+package main
 
 import (
 	"fmt"
@@ -12,7 +12,7 @@ import (
 	"github.com/loomnetwork/go-loom/client"
 	pclient "github.com/loomnetwork/plasma-indexer/client"
 	"github.com/loomnetwork/plasma-indexer/ethcontract"
-	"github.com/loomnetwork/plasma-indexer/model"
+	"github.com/loomnetwork/plasma-indexer/models"
 	"github.com/pkg/errors"
 )
 
@@ -25,6 +25,7 @@ type Config struct {
 	ChainID           string
 	Name              string
 	BlockInterval     int
+	BlockHeight       uint64
 }
 
 type Scanner struct {
@@ -42,6 +43,9 @@ func NewScanner(db *gorm.DB, config *Config) *Scanner {
 }
 
 func (s *Scanner) Start() {
+	if err := s.setBlockHeight(s.cfg.BlockHeight); err != nil {
+		panic(err)
+	}
 	for {
 		err := s.scan()
 		if err == nil {
@@ -63,7 +67,7 @@ func (s *Scanner) scan() error {
 	// create new client
 	dappClient := client.NewDAppChainRPCClient(s.cfg.ChainID, s.cfg.WriteURI, s.cfg.ReadURI)
 	backend := pclient.NewLoomchainFilter(dappClient)
-	contract, err := ethcontract.NewCardFaucetFilterer(common.HexToAddress(s.cfg.ContractAddress), backend)
+	contract, err := ethcontract.NewLoomStoreFilterer(common.HexToAddress(s.cfg.ContractAddress), backend)
 	if err != nil {
 		return err
 	}
@@ -71,9 +75,9 @@ func (s *Scanner) scan() error {
 	for {
 		select {
 		case <-ticker.C:
-			var height model.Height
-			err := s.db.Where(&model.Height{Name: s.cfg.Name}).
-				Attrs(model.Height{Name: s.cfg.Name}).
+			var height models.Height
+			err := s.db.Where(&models.Height{Name: s.cfg.Name}).
+				Attrs(models.Height{Name: s.cfg.Name}).
 				FirstOrCreate(&height).Error
 
 			if err != nil {
@@ -82,7 +86,7 @@ func (s *Scanner) scan() error {
 			fromBlock := height.LastBlockHeight + 1
 			toBlock := fromBlock + uint64(s.cfg.BlockInterval) - 1
 
-			lastBlockHeight, err := queryBlockHeight(dappClient)
+			lastBlockHeight, err := dappClient.GetBlockHeight()
 			if err != nil {
 				return err
 			}
@@ -91,20 +95,20 @@ func (s *Scanner) scan() error {
 				continue
 			}
 
-			fmt.Printf("fetching block %d to %d , latest block: %d\n", fromBlock, toBlock, lastBlockHeight)
-
 			filterOpts := &bind.FilterOpts{
 				Start: fromBlock,
 				End:   &toBlock,
 			}
 
-			events, err := fetchGeneratedCard(dappClient, contract, filterOpts)
+			events, err := fetchNewValueSet(dappClient, contract, filterOpts)
 			if err != nil {
 				return err
 			}
 
+			fmt.Printf("fetching block %d to %d , latest block: %d, %d events found\n", fromBlock, toBlock, lastBlockHeight, len(events))
+
 			tx := s.db.Begin()
-			if err := batchProcessCardGenerated(tx, events); err != nil {
+			if err := batchProcessNewValueSet(tx, events); err != nil {
 				tx.Rollback()
 				return err
 			}
@@ -123,21 +127,34 @@ func (s *Scanner) scan() error {
 	}
 }
 
-func batchProcessCardGenerated(db *gorm.DB, events []*model.GeneratedCard) error {
+func batchProcessNewValueSet(db *gorm.DB, events []*models.NewValueSet) error {
 	if len(events) == 0 {
 		return nil
 	}
-
+	for _, event := range events {
+		err := db.Where(models.NewValueSet{TxHash: event.TxHash}).
+			Assign(event).
+			FirstOrInit(&event).
+			Error
+		if err != nil {
+			return err
+		}
+		if err := db.Save(&event).Error; err != nil {
+			return err
+		}
+	}
 	return nil
 }
 
-func fetchGeneratedCard(dappClient *client.DAppChainRPCClient, filterer *ethcontract.CardFaucetFilterer, filterOpts *bind.FilterOpts) ([]*model.GeneratedCard, error) {
-	it, err := filterer.FilterGeneratedCard(filterOpts)
+func fetchNewValueSet(
+	dappClient *client.DAppChainRPCClient, filterer *ethcontract.LoomStoreFilterer, filterOpts *bind.FilterOpts,
+) ([]*models.NewValueSet, error) {
+	it, err := filterer.FilterNewValueSet(filterOpts)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get logs for GeneratedCard")
 	}
 	var chainID = dappClient.GetChainID()
-	events := make([]*model.GeneratedCard, 0)
+	events := make([]*models.NewValueSet, 0)
 	for {
 		ok := it.Next()
 		if ok {
@@ -147,12 +164,12 @@ func fetchGeneratedCard(dappClient *client.DAppChainRPCClient, filterer *ethcont
 				return nil, err
 			}
 			contractAddr := loom.Address{ChainID: chainID, Local: receipt.ContractAddress}.MarshalPB()
-			events = append(events, &model.GeneratedCard{
+			events = append(events, &models.NewValueSet{
 				BlockHeight: ev.Raw.BlockNumber,
 				TxIdx:       ev.Raw.TxIndex,
-				Owner:       receipt.CallerAddress.String(),
-				CardID:      ev.CardId.String(),
-				BoosterType: ev.BoosterType,
+				Value:       ev.Value.String(),
+				TxHash:      ev.Raw.TxHash.String(),
+				Name:        ev.Name,
 				Contract:    contractAddr.String(),
 			})
 		} else {
@@ -167,10 +184,14 @@ func fetchGeneratedCard(dappClient *client.DAppChainRPCClient, filterer *ethcont
 	return events, nil
 }
 
-func queryBlockHeight(c *client.DAppChainRPCClient) (uint64, error) {
-	block, err := c.GetEvmBlockByNumber("latest", false)
-	if err != nil {
-		return 0, errors.Wrap(err, "failed to get latest block number")
+func (s *Scanner) setBlockHeight(h uint64) error {
+	var height models.Height
+	err := s.db.Where(&models.Height{Name: s.cfg.Name}).
+		Attrs(models.Height{Name: s.cfg.Name}).
+		FirstOrCreate(&height).Error
+	height.LastBlockHeight = h
+	if err = s.db.Save(&height).Error; err != nil {
+		return err
 	}
-	return uint64(block.Number), nil
+	return nil
 }

@@ -1,4 +1,4 @@
-package model
+package models
 
 import "time"
 
@@ -9,14 +9,15 @@ type Height struct {
 	UpdatedAt       time.Time
 }
 
-type GeneratedCard struct {
+type NewValueSet struct {
 	ID          uint64 `gorm:"primary_key"`
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
 	BlockHeight uint64
+	BlockTime   uint64
 	TxIdx       uint
-	Owner       string
-	CardID      string
-	BoosterType uint8
+	TxHash      string `gorm:"not null; unique_index"`
+	Name        string
+	Value       string
 	Contract    string
 }
