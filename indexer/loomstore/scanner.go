@@ -43,8 +43,10 @@ func NewScanner(db *gorm.DB, config *Config) *Scanner {
 }
 
 func (s *Scanner) Start() {
-	if err := s.setBlockHeight(s.cfg.BlockHeight); err != nil {
-		panic(err)
+	if s.cfg.BlockHeight != 0 {
+		if err := s.setBlockHeight(s.cfg.BlockHeight - 1); err != nil {
+			panic(err)
+		}
 	}
 	for {
 		err := s.scan()

@@ -88,7 +88,7 @@ func autoMigrate() error {
 }
 
 func loadConfig() error {
-	viper.SetConfigName("indexer")
+	viper.SetConfigName("plasma")
 	viper.AddConfigPath(".")
 	viper.SetDefault("DATABASE_USERNAME", "root")
 	viper.SetDefault("DATABASE_NAME", "plasma-indexer")

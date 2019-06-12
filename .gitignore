@@ -1,4 +1,4 @@
 # binaries
 /vendor
-/loomstore-scanner
-/plasma-indexer
+/loomstore-indexer
+/plasma-api

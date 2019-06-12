@@ -12,19 +12,19 @@ make deps
 make
 ```
 
-## LoomStore scanner
-LoomStore scanner queries events emitted from LoomStore contract and store them in MySQL database
+## LoomStore indexer
+LoomStore indexer queries events emitted from LoomStore contract and store them in MySQL database
 
-## Run LoomStore scanner
+## Run LoomStore indexer
 ```sh
-./loomsotre-scanner --db-password rootpassword --db-username root --block-height 5714082 --read-uri http://plasma.dappchains.com/query
+./loomsotre-indexer --db-password rootpassword --db-username root --block-height 5714082 --read-uri http://plasma.dappchains.com/query
 ```
 
-## Plasma indexer
-Plasma indexer provides HTTP endpoint for querying specific events from MySQL database
+## Plasma API
+Plasma API provides API endpoint for querying specific events from MySQL database
 
-## Run Plasma indexer API
+## Run Plasma API API
 ```sh
-vi indexer.yaml // edit config file
-./plasma-indexer
+vi plasma.yaml // edit config file
+./plasma-api
 ```

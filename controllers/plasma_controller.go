@@ -30,28 +30,21 @@ type ListLoomStoreEventsResponse struct {
 func (c *PlasmaController) ListLoomStoreEvents(w http.ResponseWriter, r *http.Request) {
 	name := r.URL.Query().Get("name")
 
-	pagen := 1
-	page := r.URL.Query().Get("page")
-	if page != "" {
-		pagen, _ = strconv.Atoi(page)
-		if pagen <= 0 {
-			pagen = 1
-		}
+	page, _ := strconv.Atoi(r.URL.Query().Get("page"))
+	if page <= 0 {
+		page = 1
 	}
-	perPagen := maxStatsPerPage
-	perPage := r.URL.Query().Get("per_page")
-	if perPage != "" {
-		perPagen, _ = strconv.Atoi(perPage)
-		if perPagen <= 0 {
-			perPagen = maxStatsPerPage
-		}
+
+	perPage, _ := strconv.Atoi(r.URL.Query().Get("per_page"))
+	if perPage <= 0 {
+		perPage = maxStatsPerPage
 	}
 
 	var data []models.NewValueSet
 	result := c.DB.
 		Where(models.NewValueSet{Name: name}).
-		Limit(perPagen).
-		Offset((pagen - 1) * perPagen).
+		Limit(perPage).
+		Offset((page - 1) * perPage).
 		Order("created_at DESC")
 
 	err := result.Find(&data).Error
@@ -66,8 +59,8 @@ func (c *PlasmaController) ListLoomStoreEvents(w http.ResponseWriter, r *http.Re
 
 	resp := ListLoomStoreEventsResponse{
 		Data:  data,
-		Page:  pagen,
-		Limit: perPagen,
+		Page:  page,
+		Limit: perPage,
 		Total: countTotal,
 	}
 	w.Header().Set("Content-Type", "application/json")

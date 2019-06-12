@@ -2,21 +2,21 @@ PKG = github.com/loomnetwork/plasma-indexer
 
 all: build
 
-build: plasma-indexer loomstore-scanner
+build: plasma-api loomstore-indexer
 
-plasma-indexer:
-	go build -o plasma-indexer $(PKG)
+plasma-api:
+	go build -o plasma-api $(PKG)
 
-loomstore-scanner:
-	go build -o loomstore-scanner $(PKG)/scanner/loomstore
+loomstore-indexer:
+	go build -o loomstore-indexer $(PKG)/indexer/loomstore
 
 test:
 	go test -tags evm
 
 clean:
 	go clean
-	rm -rf loomstore-scanner
-	rm -rf plasma-indexer
+	rm -rf loomstore-indexer
+	rm -rf plasma-api
 
 loomstore-abigen: abigen
 	abigen --abi abi/loom_store.abi --pkg ethcontract --type LoomStore --out ethcontract/loom_store.go
@@ -27,4 +27,4 @@ abigen:
 deps:
 	dep ensure -vendor-only
 
-.PHONY: all build clean test abigen cardfaucet-abigen
+.PHONY: all build clean test abigen loomstore-abigen
