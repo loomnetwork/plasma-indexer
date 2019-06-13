@@ -19,8 +19,8 @@ LoomStore indexer queries events emitted from LoomStore contract and store them 
 
 ## Run LoomStore indexer
 ```sh
-./loomstore-indexer --db-password rootpassword --db-user root --block-height 6714082 \
- --read-uri http://extdev-plasma-us1.dappchains.com:80/query --contract-address 0x8AE87cb755837c22Ec3E105144d88E9CE6769A62
+./loomstore-indexer --db-password rootpassword --db-user root --block-height 5714082 \
+ --read-uri http://your-non-validating-node.com/query --contract-address 0x8AE87cb755837c22Ec3E105144d88E9CE6769A62
 ```
 
 ## Plasma API
