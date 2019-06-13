@@ -50,7 +50,7 @@ func init() {
 	rootCmd.PersistentFlags().Int("poll-interval", 5, "Poll interval in seconds")
 	rootCmd.PersistentFlags().Int("block-interval", 20, "Amount of blocks to fetch")
 	rootCmd.PersistentFlags().Int("reconnect-interval", 5, "Reconnect interval in seconds")
-	rootCmd.PersistentFlags().String("contract-address", "0x8AE87cb755837c22Ec3E105144d88E9CE6769A62", "Contract Address in hex format")
+	rootCmd.PersistentFlags().String("contract-address", "", "Contract Address in hex format")
 
 	viper.BindPFlag("db-url", rootCmd.PersistentFlags().Lookup("db-url"))
 	viper.BindPFlag("db-host", rootCmd.PersistentFlags().Lookup("db-host"))
