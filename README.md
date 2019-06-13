@@ -1,12 +1,12 @@
 Plasma Indexer
 ===
 
-Sample code of EVM contract scanner and API
+Sample code of EVM contract events indexer and API
 
 ## Setup
 
 1. create a database for storing events, default name is `plasma-indexer`
-2. compile LoomStore scanner and Plasma indexer using the following command
+2. compile LoomStore indexer and Plasma API using the following command
 ```sh
 make deps
 make
@@ -23,7 +23,7 @@ LoomStore indexer queries events emitted from LoomStore contract and store them 
 ## Plasma API
 Plasma API provides API endpoint for querying specific events from MySQL database
 
-## Run Plasma API API
+## Run Plasma API
 ```sh
 vi plasma.yaml // edit config file
 ./plasma-api
