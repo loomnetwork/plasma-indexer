@@ -4,14 +4,10 @@ Plasma Indexer
 Sample code of EVM contract events indexer and API. 
 
 ## Setup sample code
-1. create a MYSQL database for storing events, default DB name is `plasma-indexer`
-2. clone the probject 
-```sh
-git clone git@github.com:loomnetwork/plasma-indexer.git
-```
-3. deploy `LoomStore` contract to your cluster
-4. call `set` method to make the contract emit an event
-5. compile LoomStore indexer and Plasma API using the following command
+1. create a MYSQL database for storing events, default DB name is `plasma-indexer
+2. deploy `contract/LoomStore.sol` contract to your cluster
+3. call `set` method to make the contract emit an event
+4. compile LoomStore indexer and Plasma API using the following command
 ```sh
 make
 ```
