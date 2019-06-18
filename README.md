@@ -18,7 +18,7 @@ LoomStore indexer queries events emitted from LoomStore contract and store them 
 ## Run LoomStore indexer
 ```sh
 ./loomstore-indexer --db-password rootpassword --db-user root --block-height 5714082 \
- --read-uri http://your-non-validating-node.com/query --contract-address 0x8AE87cb755837c22Ec3E105144d88E9CE6769A62
+ --read-uri http://your-non-validating-node.com:80/query --contract-address 0x8AE87cb755837c22Ec3E105144d88E9CE6769A62
 ```
 
 ## Plasma API
@@ -33,11 +33,20 @@ then go to http://localhost:3333/loomstore_events to check the fetched events
 
 ## Working example 
 
-This repository contains solidity contract `LoomStore` along with its abi.
 To demonstrate fetching contract events, the following steps have been done
 1. `LoomStore` has been deployed on extdev cluster with address `0x8AE87cb755837c22Ec3E105144d88E9CE6769A62`
 2. `LoomStore` has a method `set` that, once it's called, emits `NewValueSet` event
 3. `set` is called at block height 6714083 and the `NewValueSet` event has been emitted, please check
 http://extdev-plasma-us1.dappchains.com/query/contractevents?fromBlock=6714083&toBlock=6714083
-4. `LoomStore indexer` is used to scan extdev cluster and store `NewValueSet` events in MySQL database
-5. `Plasma API` provides an API endpoint for easily querying contract events 
+
+To run `LoomStore indexer` to query events and store in MySQL
+```sh
+./loomstore-indexer --db-password rootpassword --db-user root --block-height 6714083 \
+ --read-uri http://extdev-plasma-us1.dappchains.com:80/query --contract-address 0x8AE87cb755837c22Ec3E105144d88E9CE6769A62
+```
+
+To run `Plasma API`
+```sh
+./plasma-api
+```
+then go to http://localhost:3333/loomstore_events to check the fetched events

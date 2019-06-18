@@ -1,0 +1,21 @@
+ignored = [
+  "github.com/miguelmota/go-solidity-sha3",
+  "golang.org/x/crypto*",
+  "google.golang.org/grpc*",
+  "github.com/gogo/protobuf*",
+  "github.com/hashicorp/go-plugin*",
+  "github.com/spf13/cobra*",
+  "github.com/spf13/pflag*",
+  "github.com/go-kit/kit*",
+  "github.com/grpc-ecosystem/go-grpc-prometheus*",
+  "github.com/prometheus/client_golang/prometheus*",
+  "github.com/loomnetwork/yubihsm-go*",
+  "github.com/certusone/yubihsm-go*",
+  "github.com/jmhodges/levigo*", # can only build it with the right c packages
+  "github.com/btcsuite/btcd*"
+]
+
+[[override]]
+  name = "github.com/ethereum/go-ethereum"
+  source = "https://github.com/loomnetwork/go-ethereum.git"
+  revision = "1fb6138d017a4309105d91f187c126cf979c93f9"
