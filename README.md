@@ -9,6 +9,7 @@ Sample code of EVM contract events indexer and API.
 3. call `set` method to make the contract emit an event
 4. compile LoomStore indexer and Plasma API using the following command
 ```sh
+make deps
 make
 ```
 
